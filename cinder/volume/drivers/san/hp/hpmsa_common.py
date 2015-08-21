@@ -29,6 +29,13 @@ common_opt = [
     cfg.StrOpt('hpmsa_wbi_protocol',
                choices=['http', 'https'],
                help="HPMSA web interface protocol."),
+    cfg.BoolOpt('hpmsa_ssl_certificate',
+               default=False,
+               help="Whether to verify HPMSA array SSL certificate."),
+    cfg.StrOpt('hpmsa_ssl_certificate_path',
+               default=None,
+               help="HPMSA array SSL certificate path."),
+
 ]
 
 iscsi_opt = [
@@ -50,7 +57,13 @@ class HPMSACommon(dothill_common.DotHillCommon):
         self.vendor_name = "HPMSA"
         self.backend_name = self.config.hpmsa_backend_name
         self.backend_type = self.config.hpmsa_backend_type
+        self.wbi_protocol = self.config.hpmsa_wbi_protocol
+        ssl_verify = False
+        if self.wbi_protocol == 'https' and self.config.hpmsa_ssl_certificate:
+            ssl_verify = self.config.hpmsa_ssl_certificate_path or True
+
         self.client = hpmsa_client.HPMSAClient(self.config.san_ip,
                                                self.config.san_login,
                                                self.config.san_password,
-                                               self.config.hpmsa_wbi_protocol)
+                                               self.wbi_protocol,
+                                               ssl_verify)

@@ -40,6 +40,12 @@ common_opt = [
     cfg.StrOpt('dothill_wbi_protocol',
                choices=['http', 'https'],
                help="DotHill web interface protocol."),
+    cfg.BoolOpt('dothill_ssl_certificate',
+               default=False,
+               help="Whether to verify DotHill array SSL certificate."),
+    cfg.StrOpt('dothill_ssl_certificate_path',
+               default=None,
+               help="DotHill array SSL certificate path."),
 ]
 
 iscsi_opt = [
@@ -63,10 +69,15 @@ class DotHillCommon(object):
         self.vendor_name = "DotHill"
         self.backend_name = self.config.dothill_backend_name
         self.backend_type = self.config.dothill_backend_type
+        self.wbi_protocol = self.config.dothill_wbi_protocol
+        ssl_verify = False
+        if self.wbi_protocol == 'https' and self.config.dothill_ssl_certificate:
+            ssl_verify = self.config.dothill_ssl_certificate_path or True
         self.client = dothill.DotHillClient(self.config.san_ip,
                                             self.config.san_login,
                                             self.config.san_password,
-                                            self.config.dothill_wbi_protocol)
+                                            self.wbi_protocol,
+                                            ssl_verify)
 
     def get_version(self):
         return self.VERSION

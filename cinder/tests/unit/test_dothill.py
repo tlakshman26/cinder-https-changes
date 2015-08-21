@@ -146,8 +146,9 @@ class TestDotHillClient(test.TestCase):
         self.passwd = '!manage'
         self.ip = '10.0.0.1'
         self.protocol = 'http'
+        self.ssl_verify = False
         self.client = dothill.DotHillClient(self.ip, self.login, self.passwd,
-                                            self.protocol)
+                                            self.protocol, self.ssl_verify)
 
     @mock.patch('requests.get')
     def test_login(self, mock_requests_get):

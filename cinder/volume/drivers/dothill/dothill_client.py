@@ -30,11 +30,12 @@ LOG = logging.getLogger(__name__)
 
 
 class DotHillClient(object):
-    def __init__(self, host, login, password, protocol):
+    def __init__(self, host, login, password, protocol, ssl_verify):
         self._login = login
         self._password = password
         self._base_url = "%s://%s/api" % (protocol, host)
         self._session_key = None
+        self.ssl_verify = ssl_verify
 
     def _get_auth_token(self, xml):
         """Parse an XML authentication reply to extract the session key."""
@@ -53,7 +54,7 @@ class DotHillClient(object):
 
         url = self._base_url + "/login/" + digest
         try:
-            xml = requests.get(url)
+            xml = requests.get(url, verify=self.ssl_verify)
         except requests.exceptions.RequestException:
             raise exception.DotHillConnectionError
 
@@ -96,7 +97,7 @@ class DotHillClient(object):
         url = self._build_request_url(path, *args, **kargs)
         headers = {'dataType': 'api', 'sessionKey': self._session_key}
         try:
-            xml = requests.get(url, headers=headers)
+            xml = requests.get(url, headers=headers, verify=self.ssl_verify)
             tree = etree.XML(xml.text.encode('utf8'))
         except Exception:
             raise exception.DotHillConnectionError
@@ -109,7 +110,7 @@ class DotHillClient(object):
     def logout(self):
         url = self._base_url + '/exit'
         try:
-            requests.get(url)
+            requests.get(url, verify=self.ssl_verify)
             return True
         except Exception:
             return False

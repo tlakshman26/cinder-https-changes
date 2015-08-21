@@ -29,6 +29,12 @@ common_opt = [
     cfg.StrOpt('lenovo_wbi_protocol',
                choices=['http', 'https'],
                help="Lenovo web interface protocol."),
+    cfg.BoolOpt('lenovo_ssl_certificate',
+               default=False,
+               help="Whether to verify Lenovo array SSL certificate."),
+    cfg.StrOpt('lenovo_ssl_certificate_path',
+               default=None,
+               help="Lenovo array SSL certificate path.")
 ]
 
 iscsi_opt = [
@@ -51,7 +57,11 @@ class LenovoCommon(dothill_common.DotHillCommon):
         self.backend_name = self.config.lenovo_backend_name
         self.backend_type = self.config.lenovo_backend_type
         self.wbi_protocol = self.config.lenovo_wbi_protocol
+        ssl_verify = False
+        if self.wbi_protocol == 'https' and self.config.lenovo_ssl_certificate:
+            ssl_verify = self.config.lenovo_ssl_certificate_path or True
         self.client = lenovo_client.LenovoClient(self.config.san_ip,
                                                  self.config.san_login,
                                                  self.config.san_password,
-                                                 self.wbi_protocol)
+                                                 self.wbi_protocol,
+                                                 ssl_verify)
